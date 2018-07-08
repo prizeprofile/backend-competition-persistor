@@ -1,49 +1,37 @@
-// TODO: Default region.
 const AWS = require('aws-sdk')
 const SQS = new AWS.SQS({ region: 'eu-west-1' })
+const save = require('./src/save.js')
 
-exports.handler = async (event, context, callback) => {
-  /**
-   * A message is stringified object that contains
-   * properties region_id, params and max_id.
-   * @type {Object}
-   */
-  const message = JSON.parse(event.Records.pop().Sns.Message)
-  const region_id = parseInt(message.region_id)
+exports.handler = (event, context, callback) => {
+  // SQS queue to pull competitions from.
+  const QueueUrl = process.env.COMPETITIONS_QUEUE_URL
 
-  /**
-   * Tweet collection based on settings from message sorted by tweet id.
-   * TODO: Handle errors.
-   * @type {Object[]}
-   */
-  const tweets = await require('./src/fetcher')(message)
-  const tweets_count = tweets.length
+  // Compose params for SQS reading.
+  const params = {
+   AttributeNames: ['SentTimestamp'],
+   MessageAttributeNames: ['All'],
+   MaxNumberOfMessages: 10,
+   VisibilityTimeout: 0,
+   WaitTimeSeconds: 0,
+   QueueUrl,
+  }
 
-  // Sends a message to result queue which is read by
-  // the scheduler and creates the cycle.
-  // TODO: Error handling.
-  SQS.sendMessage({
-    MessageBody: JSON.stringify({
-      region_id,
-      tweets_count,
-      max_id: tweets_count ? tweets[tweets_count - 1].id_str : null
-    }),
-    QueueUrl: process.env.TASK_QUEUE_URL
+  return new Promise((resolve, reject) => {
+    // Try to poll all messages.
+    SQS.receiveMessage(params, (err, data) => {
+      // If there was an error or if there were no messages, abort.
+      err || ! data.Messages.length ? reject(err) : resolve(data.Messages)
+    })
   })
-
-  /**
-   * Parses the tweets array and saves it into the database.
-   * @throws {Error}
-   * @type {Promise<void>}
-   */
-  const competitions = await require('./src/parser')(tweets, region_id)
-
-  // Pushes parsed competitions to a queue that handles saving them to DB.
-  // TODO: Error handling.
-  SQS.sendMessage({
-    MessageBody: JSON.stringify({ region_id, competitions }),
-    QueueUrl: process.env.DB_QUEUE_URL
-  })
-
-  callback(null, 'success')
+    // Save all competitions.
+    .then((msgs) => Promise.all(msgs.map(msg => save(msg)))
+    // Send the ReceiptHandle to next clause.
+    .then(() => msgs.pop().ReceiptHandle))
+    .then((ReceiptHandle) => new Promise((resolve, reject) => {
+      // Delete messages that were received.
+      SQS.deleteMessage({ QueueUrl, ReceiptHandle }, (err, data) => {
+        err ? reject(err) : resolve()
+      })
+    }))
+    .catch(e => console.error('Exit with', e))
 }

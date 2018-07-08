@@ -12,13 +12,13 @@ module.exports = (grunt) => {
         options: {
           region: 'eu-west-1'
         },
-        arn: 'arn:aws:lambda:eu-west-1:365488455739:function:stage-scraper-parse-tweets'
+        arn: 'arn:aws:lambda:eu-west-1:365488455739:function:stage-scraper-save-competitions'
       },
       prod: {
         options: {
           region: 'eu-west-1'
         },
-        arn: 'arn:aws:lambda:eu-west-1:365488455739:function:prod-scraper-parse-tweets'
+        arn: 'arn:aws:lambda:eu-west-1:365488455739:function:prod-scraper-save-competitions'
       }
     }
   })
