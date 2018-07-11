@@ -31,11 +31,12 @@ module.exports = class Competition extends Model {
     this._fields = {
       comments: 0,
       source_id: 0,
-      text: utf8.encode(tweet.text),
+      preview: object.media,
       retweets: tweet.retweets,
       tweet_id: tweet.tweet_id,
       end_date: object.end_date,
       favorites: tweet.favorites,
+      text: utf8.encode(tweet.text),
       promoter_id: object.promoter_id,
       region_id: process.env.REGION_ID,
       posted: new Date(tweet.posted).toISOString(),
