@@ -26,8 +26,6 @@ module.exports = class Competition extends Model {
   from (object) {
     let tweet = object.data.tweet
 
-    console.log('text', tweet.text)
-
     this._fields = {
       comments: 0,
       source_id: 0,
