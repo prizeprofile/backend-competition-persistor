@@ -12,8 +12,6 @@ module.exports = async (competitions) => {
 
   // This object will hold tweet_id => id mapping.
   const mapping = await new Competition().mapIds(ids, db)
-  
-  console.log('breakpoint', 3)
 
   // Prepares the rows object to batch insert new competitions.
   let rows = competitions
@@ -28,9 +26,12 @@ module.exports = async (competitions) => {
     // Maps competition information to the database fields.
     .map(competition => new Competition().from(competition).fields())
   
-  console.log('breakpoint', 4, rows)
-
   // Saves all competitions and closes the connection.
-  return db.batchInsert(table, rows, 100)
-    .then(() => db.destroy())
+  return new Promise((resolve, reject) => {
+    db.insert(rows)
+      .into(table)
+      .then(() => db.destroy())
+      .then(resolve)
+      .catch(reject)
+  })
 }

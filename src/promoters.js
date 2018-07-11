@@ -11,16 +11,7 @@ module.exports = async (promoters) => {
   let ids = promoters.map(({ twitter_id }) => twitter_id)
 
   // This object will hold twitter_id => id mapping.
-  //const mapping = await new Promoter().mapIds(ids, db)
-
-  const mapping = {}
-
-  if (ids.length) {
-    await db.select('id', 'twitter_id')
-      .from(table)
-      .whereIn('twitter_id', ids)
-      .then(res => res.forEach(row => mapping[row.twitter_id] = row.id))
-  }
+  const mapping = await new Promoter().mapIds(ids, db)
 
   // Prepares the rows object to batch insert new promoters.
   let rows = promoters
@@ -33,21 +24,26 @@ module.exports = async (promoters) => {
     // Maps promoter information to the database fields.
     .map(promoter => new Promoter().from(promoter).fields())
 
-  console.log(table, rows)
-
-  if (rows.length) {
-    await db.batchInsert(table, rows, 100)
-    .returning('id')
-    // InnoDB returns first id of last batch inserted.
-    // Since auto increment is activated and db is locked, we can
-    // assume that ids of every competition is going to be one higher
-    // then of the previous one.
-    .then((id) => {
-      for (let i = id; id < id + rows.length; i++) {
-        mapping[rows[i - id]] = i
-      }
-    })
+  if (! rows.length) {
+    return mapping
   }
-  
-  return mapping
+
+  // InnoDB returns first id of last batch inserted.
+  // Since auto increment is activated and db is locked, we can
+  // assume that ids of every competition is going to be one higher
+  // then of the previous one.
+  return new Promise((resolve, reject) => {
+    db.insert(rows, 'id')
+      .into(table)
+      .then((id = []) => {
+        id = id.pop()
+
+        for (let i = id; id < id + rows.length; i++) {
+          mapping[rows[i - id]] = i
+        }
+
+        resolve(mapping)
+      })
+      .catch(reject)
+  })
 }

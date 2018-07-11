@@ -13,8 +13,6 @@ exports.handler = async (event, context, callback) => {
   // Saves promoters to database or fetches their id if they're already stored.
   const promoters = await populatePromoters(message.competitions.map(({data}) => data.promoter))
 
-  console.log('breakpoint', 2)
-
   // Updates competitions array with promoter_id.
   const competitions = message.competitions
     .map((comp) => {
@@ -26,9 +24,6 @@ exports.handler = async (event, context, callback) => {
 
   // Saves all competitions to the database.
   await saveCompetitions(competitions)
-
-  
-  console.log('breakpoint', 4)
 
   callback(null, 'success')
 }
