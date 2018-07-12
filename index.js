@@ -2,6 +2,9 @@ const populatePromoters = require('./src/promoters')
 const saveCompetitions = require('./src/competitions')
 
 exports.handler = async (event, context, callback) => {
+  // Don't close the Mysql connection. It's to be reused by next lambda.
+  context.callbackWaitsForEmptyEventLoop = false
+
   /**
    * A message is stringified object that contains
    * an array of competitions.

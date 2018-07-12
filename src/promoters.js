@@ -35,10 +35,14 @@ module.exports = async (promoters) => {
   return new Promise((resolve, reject) => {
     db.insert(rows, 'id')
       .into(table)
-      .then((id = []) => {
+      .then((id) => {
+        if (! Array.isArray(id)) {
+          return resolve(mapping)
+        }
+
         id = id.pop()
 
-        for (let i = id; id < id + rows.length; i++) {
+        for (let i = id; i < id + rows.length; i++) {
           mapping[rows[i - id]] = i
         }
 
