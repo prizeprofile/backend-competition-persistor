@@ -1,4 +1,3 @@
-const db = require('./db')
 const table = 'competitions'
 const Competition = require('./models/Competition')
 
@@ -6,7 +5,7 @@ const Competition = require('./models/Competition')
  * Saves all competitions to database if they don't exist yet.
  * @param {Object[]} competitions 
  */
-module.exports = async (competitions) => {
+module.exports = async (competitions, db) => {
   // Gets all ids from the batch.
   let ids = competitions.map(({ data }) => data.tweet.tweet_id)
 

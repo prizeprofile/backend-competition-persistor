@@ -1,4 +1,3 @@
-const db = require('./db')
 const table = 'promoters'
 const Promoter = require('./models/Promoter')
 
@@ -6,7 +5,7 @@ const Promoter = require('./models/Promoter')
  * Saves promoters to database or fetches their id if they're already stored.
  * @param {Object[]} promoters 
  */
-module.exports = async (promoters) => {
+module.exports = async (promoters, db) => {
   // Gets all ids from the batch.
   let ids = promoters.map(({ twitter_id }) => twitter_id)
 
