@@ -1,7 +1,7 @@
 {
   "name": "backend-competition-persistor",
   "version": "1.0.0",
-  "description": "Persists competitions read from SQS.",
+  "description": "Persists competitions polled from SQS.",
   "main": "index.js",
   "repository": {
     "type": "git",
