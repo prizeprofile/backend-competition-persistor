@@ -36,7 +36,7 @@ module.exports = class Competition extends Model {
       favorites: tweet.favorites,
       text: utf8.encode(tweet.text),
       promoter_id: object.promoter_id,
-      region_id: process.env.REGION_ID,
+      region_id: object.region_id,
       posted: new Date(tweet.posted).toISOString(),
       entry_methods: JSON.stringify(object.entry_methods),
     }

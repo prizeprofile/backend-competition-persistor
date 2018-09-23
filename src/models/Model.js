@@ -1,3 +1,4 @@
+const db = require('../db')
 
 module.exports = class Model {
   /**
@@ -17,12 +18,12 @@ module.exports = class Model {
 
   /**
    * Maps unique identifiers to primary keys.
-   * TODO: Refactor this bit.
+   *
    * @param {String[]|Number[]} ids
-   * @param {knex} db
+   *
    * @return {Promise<Object>}
    */
-  mapIds (ids, db) {
+  mapIds (ids) {
     return new Promise((resolve, reject) => {
       const mapping = {}
 

@@ -1,36 +1,28 @@
-const db = require('./src/db')
-const populatePromoters = require('./src/promoters')
-const saveCompetitions = require('./src/competitions')
+require('dotenv').config()
+const AWS = require('aws-sdk')
+const persist = require('./src')
+const consumer = require('sqs-consumer')
 
-exports.handler = async (event, context, callback) => {
-  // Don't close the Mysql connection. It's to be reused by next lambda.
-  context.callbackWaitsForEmptyEventLoop = false
+AWS.config.update({
+  region: process.env.AWS_REGION,
+  accessKeyId: process.env.AWS_ACCESS_TOKEN,
+  secretAccessKey: process.env.AWS_ACCESS_TOKEN_SECRET
+})
 
-  /**
-   * A message is stringified object that contains
-   * an array of competitions.
-   * @type {Object}
-   */
-  const message = JSON.parse(event.Records.pop().Sns.Message)
-  process.env.REGION_ID = message.region_id
+const app = consumer.create({
+  sqs: new AWS.SQS(),
+  queueUrl: process.env.SQS_PERSISTOR,
+  handleMessage ({ Body }, done) {
+    const { region_id, competitions } = JSON.parse(Body)
 
-  // Saves promoters to database or fetches their id if they're already stored.
-  const promoters = await populatePromoters(message.competitions.map(({data}) => data.promoter), db)
+    if (isNaN(region_id) || ! Array.isArray(competitions)) {
+      return done()
+    }
 
-  // Updates competitions array with promoter_id.
-  const competitions = message.competitions
-    .map((comp) => {
-      comp.promoter_id = promoters[comp.data.promoter.twitter_id]
+    persist(region_id, competitions)
+      .then(_ => done())
+      .catch(_ => done())
+  }
+})
 
-      return comp
-    })
-    .filter(comp => Number.isInteger(comp.promoter_id))
-
-  // Saves all competitions to the database.
-  await saveCompetitions(competitions, db)
-
-  await Promise.resolve(db.destroy())
-    .catch(console.error)
-    // TODO: Analytics.
-    .then(() => callback(null, 'success'))
-}
+app.start()

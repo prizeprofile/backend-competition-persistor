@@ -1,15 +1,15 @@
 {
-  "name": "lambda-competition-saver",
+  "name": "backend-competition-persistor",
   "version": "1.0.0",
-  "description": "",
+  "description": "Persists competitions read from SQS.",
   "main": "index.js",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/prizeprofile/lambda-competition-saver.git"
+    "url": "git+https://github.com/prizeprofile/backend-competition-persistor.git"
   },
   "author": "Michael Bausano",
   "license": "ISC",
-  "homepage": "https://github.com/prizeprofile/lambda-competition-saver#readme",
+  "homepage": "https://github.com/prizeprofile/backend-competition-persistor#readme",
   "scripts": {
     "test": "mocha"
   },
@@ -18,8 +18,10 @@
     "test": "test"
   },
   "dependencies": {
+    "dotenv": "^6.0.0",
     "knex": "^0.15.0",
     "mysql": "^2.15.0",
+    "sqs-consumer": "^3.8.0",
     "utf8": "^3.0.0"
   },
   "devDependencies": {
