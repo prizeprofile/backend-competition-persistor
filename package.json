@@ -2,7 +2,7 @@
   "name": "backend-competition-persistor",
   "version": "1.0.0",
   "description": "Persists competitions polled from SQS.",
-  "main": "index.js",
+  "main": "app.js",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/prizeprofile/backend-competition-persistor.git"
@@ -11,7 +11,7 @@
   "license": "ISC",
   "homepage": "https://github.com/prizeprofile/backend-competition-persistor#readme",
   "scripts": {
-    "test": "mocha"
+    "start": "node app.js"
   },
   "directories": {
     "src": "src",

@@ -8,7 +8,7 @@ const db = require('./db')
  *
  * @return {Set}
  */
-module.exports = async (Entity, data) => {
+module.exports = (Entity, data) => {
   const model = new Entity()
   // Prepares the rows object to batch insert new data.
   let rows = data
@@ -28,8 +28,7 @@ module.exports = async (Entity, data) => {
     .toString()
     .replace('insert', 'INSERT IGNORE')
 
-  await new Promise((resolve, reject) => db.raw(insert).then(resolve).catch(reject))
-
-  // Gets all unique ids from the batch.
-  return Array.from(new Set(data.map(item => item[model.unique])))
+  new Promise((resolve, reject) => db.raw(insert).then(resolve).catch(reject))
+    // Gets all unique ids from the batch.
+    .then(() => Array.from(new Set(data.map(item => item[model.unique]))))
 }

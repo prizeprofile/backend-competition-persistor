@@ -13,13 +13,13 @@ const app = consumer.create({
   sqs: new AWS.SQS(),
   queueUrl: process.env.SQS_PERSISTOR,
   handleMessage ({ Body }, done) {
-    const { region_id, competitions } = JSON.parse(Body)
+    const event = JSON.parse(Body)
 
-    if (isNaN(region_id) || ! Array.isArray(competitions)) {
+    if (isNaN(event.region_id) || ! Array.isArray(event.competitions)) {
       return done()
     }
 
-    persist(region_id, competitions)
+    persist(event.region_id, event.competitions)
       .then(_ => done())
       .catch(_ => done())
   }

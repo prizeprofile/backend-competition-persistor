@@ -23,7 +23,7 @@ module.exports = class Promoter extends Model {
    * @return {Model}
    */
   from (object) {
-    this._fields = { ...object, verified: object.verified ? 1 : 0 }
+    this._fields = Object.assign({}, object, { verified: object.verified ? 1 : 0 })
 
     return this
   }
