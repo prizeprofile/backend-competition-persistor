@@ -10,12 +10,9 @@ const db = require('./db')
  */
 module.exports = (Entity, data) => {
   const model = new Entity()
+
   // Prepares the rows object to batch insert new data.
-  let rows = data
-    // Gets rid of duplicit data.
-    .filter((resource, index, self) => {
-      return index === self.findIndex(t => t[model.unique] === resource[model.unique])
-    })
+  let rows = getUnique(data, model.unique)
     // Maps resource information to the database fields.
     .map(resource => new Entity().from(resource).fields())
 
@@ -28,7 +25,33 @@ module.exports = (Entity, data) => {
     .toString()
     .replace('insert', 'INSERT IGNORE')
 
-  new Promise((resolve, reject) => db.raw(insert).then(resolve).catch(reject))
+  return new Promise((resolve, reject) => db.raw(insert).then(resolve).catch(reject))
     // Gets all unique ids from the batch.
     .then(() => Array.from(new Set(data.map(item => item[model.unique]))))
+}
+
+/**
+ * Returns unique resources.
+ *
+ * @param {any[]} source
+ * @param {String} unique
+ *
+ * @return {any[]}
+ */
+const getUnique = (source, unique) => {
+  const length = source.length, result = [], seen = new Set()
+
+  outer:
+  for (let index = 0; index < length; index++) {
+    const resource = source[index]
+
+    if (seen.has(resource[unique])) {
+      continue outer
+    }
+
+    seen.add(resource[unique])
+    result.push(resource)
+  }
+
+  return result
 }
