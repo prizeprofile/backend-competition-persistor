@@ -15,7 +15,7 @@ const app = consumer.create({
   handleMessage ({ Body }, done) {
     const event = JSON.parse(Body)
 
-    if (isNaN(event.region_id) || ! Array.isArray(event.competitions)) {
+    if (isNaN(event.region_id) || !Array.isArray(event.competitions) || !event.competitions.length) {
       return done()
     }
 
