@@ -1,6 +1,7 @@
 require('dotenv').config()
 const AWS = require('aws-sdk')
-const persist = require('./src')
+const update = require('./src/update')
+const persist = require('./src/persist')
 const consumer = require('sqs-consumer')
 
 AWS.config.update({
@@ -12,16 +13,28 @@ AWS.config.update({
 const app = consumer.create({
   sqs: new AWS.SQS(),
   queueUrl: process.env.SQS_PERSISTOR,
-  handleMessage ({ Body }, done) {
+  async handleMessage ({ Body }, done) {
     const event = JSON.parse(Body)
 
-    if (isNaN(event.region_id) || !Array.isArray(event.competitions) || !event.competitions.length) {
-      return done()
-    }
+    const method = {
+      POST: persist,
+      PUT: update
+    }[event.method]
 
-    persist(event.region_id, event.competitions)
-      .then(_ => done())
-      .catch(_ => done())
+    if (
+      !method ||
+      !Array.isArray(event.competitions) ||
+      !event.competitions.length
+    ) return done()
+
+    try {
+      console.log(`[${new Date().toISOString()}][${event.method}] New Batch of ${event.competitions.length} competitions.`)
+      await method(event)
+    } catch (e) {
+      console.log(`[${new Date().toISOString()}][${e.name}] ${e.message}`)
+    } finally {
+      done()
+    }
   }
 })
 

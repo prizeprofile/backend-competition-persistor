@@ -6,7 +6,7 @@ module.exports = class Competition extends Model {
    * Table name.
    * @var {String}
    */
-  get table () {
+  static get table () {
     return 'competitions'
   }
 
@@ -14,8 +14,8 @@ module.exports = class Competition extends Model {
    * Unique identifier.
    * @var {String}
    */
-  get unique () {
-    return 'tweet_id'
+  static get unique () {
+    return 'resource_id'
   }
 
   /**
@@ -24,20 +24,18 @@ module.exports = class Competition extends Model {
    * @return {Model}
    */
   from (object) {
-    let tweet = object.data.tweet
+    let resource = object.data.resource
 
     this._fields = {
-      comments: 0,
-      source_id: 0,
+      source_id: object.source_id,
       preview: object.media,
-      retweets: tweet.retweets,
-      tweet_id: tweet.tweet_id,
+      entrants: object.entrants,
+      resource_id: resource.resource_id,
       end_date: object.end_date,
-      favorites: tweet.favorites,
-      text: utf8.encode(tweet.text),
+      text: resource.text,
       promoter_id: object.promoter_id,
       region_id: object.region_id,
-      posted: new Date(tweet.posted).toISOString(),
+      posted: new Date(resource.posted).toISOString(),
       entry_methods: JSON.stringify(object.entry_methods),
     }
 

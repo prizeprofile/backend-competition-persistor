@@ -5,7 +5,7 @@ module.exports = class Promoter extends Model {
    * Table name.
    * @var {String}
    */
-  get table () {
+  static get table () {
     return 'promoters'
   }
 
@@ -13,8 +13,8 @@ module.exports = class Promoter extends Model {
    * Unique identifier.
    * @var {String}
    */
-  get unique () {
-    return 'twitter_id'
+  static get unique () {
+    return 'resource_id'
   }
 
   /**
