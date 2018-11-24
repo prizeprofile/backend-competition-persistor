@@ -1,4 +1,5 @@
 const db = require('./db')
+const Competition = require('./models/Competition')
 
 /**
  * Performs INSERT OR IGNORE.
@@ -18,12 +19,29 @@ module.exports = (Entity, data) => {
     throw new Error('No data received.')
   }
 
-  return new Promise((resolve, reject) => db.select(Entity.unique)
-    .from(Entity.table)
-    // Checks for existing ids.
-    .whereIn(Entity.unique, rows.map(r => r[Entity.unique]))
-    .then(resolve)
-    .catch(reject))
+  return new Promise((resolve, reject) => {
+    let query = db
+      .select(Entity.unique)
+      .from(Entity.table)
+      // Checks for existing ids.
+      .whereIn(Entity.unique, rows.map(r => r[Entity.unique]))
+
+    if (Entity === Competition) {
+      rows.forEach((row) => {
+        if (!row.end_date) {
+          return
+        }
+
+        // Prevents duplicate competitions.
+        query.orWhere(function () {
+          this.where('promoter_id', row.promoter_id)
+            .where('end_date', row.end_date)
+        })
+      })
+    }
+
+    query.then(resolve).catch(reject)
+  })
     .then((existing) => {
       // Only inserts new resources.
       const toInsert = rows.filter(r => !existing.find(e => e[Entity.unique] === r[Entity.unique]))
